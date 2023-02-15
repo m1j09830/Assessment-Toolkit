@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 from assessment_toolkit.logger import init_logger, logger, console
 from assessment_toolkit import __version__
-from assessment_toolkit.lib.asmt_scans import *
+from assessment_toolkit.lib.cool_scans import *
 
 app = typer.Typer(
     add_completion=False,
