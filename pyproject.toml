@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "Assessment-Toolkit"
+version = "0.1.0"
+description = ""
+authors = ["Miguel Rios"]
+readme = "README.md"
+homepage = "https://github.com/m1j09830/Assessment-Toolkit"
+repository = "https://github.com/m1j09830/Assessment-Toolkit"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+rich = "^12.5.1"
+typer = "^0.6.1"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.13"
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+Assessment-Toolkit = "assessment_toolkit.__main__:app"
