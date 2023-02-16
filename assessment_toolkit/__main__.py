@@ -15,7 +15,7 @@ app = typer.Typer(
 
 class Operations(str, Enum):
     scoper = "scoper"
-    shodan = "shodan"
+    shodan_scans = "shodan_scans"
     discovery = "discovery"
     full = "full"
     nikto = "nikto"
@@ -58,8 +58,13 @@ def main(
         aquatone(project_name, input_file)
 
     if operation == Operations.external_scans:
-        aquatone(project_name, input_file)
+        external_scans(project_name, input_file)
 
+    if operation == Operations.internal_scans:
+        internal_scans(project_name, input_file)
+    
+    if operation == Operations.shodan_scans:
+        shodan_scans(project_name, input_file)
 
 if __name__ == '__main__':
     app(prog_name='Assessment-Toolkit')
