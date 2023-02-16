@@ -1,3 +1,4 @@
+#Created by Miguel Rios
 import typer
 from enum import Enum
 from pathlib import Path
@@ -54,6 +55,9 @@ def main(
         nikto(project_name, input_file)
 
     if operation == Operations.aquatone:
+        aquatone(project_name, input_file)
+
+    if operation == Operations.external_scans:
         aquatone(project_name, input_file)
 
 
