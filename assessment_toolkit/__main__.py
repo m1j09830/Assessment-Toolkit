@@ -43,7 +43,7 @@ def main(
     exclude_file=str(exclude_file)
 
     if operation == Operations.scoper:
-        scoper(project_name, input_file, exclude_file)
+        scoper(project_name, input_file, exclude_file=None)
     
     if operation == Operations.discovery:
         discovery(project_name, input_file)
