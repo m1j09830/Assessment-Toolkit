@@ -22,6 +22,7 @@ class Operations(str, Enum):
     aquatone = "aquatone"
     internal_scans = "internal_scans"
     external_scans = "external_scans"
+    nuclei_scans = "nuclei_scans"
     backup = "backup"
 
 @app.command(no_args_is_help=True, help='Assessment-Toolkit help!')
@@ -34,7 +35,7 @@ def main(
         readable=True, help='Set input file'),
     exclude_file: Path = typer.Option(
         None, '--exclude-file', '-e', exists=True, file_okay=True, dir_okay=False, 
-        readable=True, help='Set input file'),
+        readable=True, help='Set exclude file. NOTE: Only for scoper function'),
     debug: bool = typer.Option(False, '--debug', help='Enable [green]DEBUG[/] output')):
 
     init_logger(debug)
@@ -65,6 +66,9 @@ def main(
     
     if operation == Operations.shodan_scans:
         shodan_scans(project_name, input_file)
+
+    if operation == Operations.nuclei_scans:
+        nuclei_scans(project_name, input_file)
 
 if __name__ == '__main__':
     app(prog_name='Assessment-Toolkit')

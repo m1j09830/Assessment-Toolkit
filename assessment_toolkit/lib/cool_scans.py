@@ -161,6 +161,17 @@ def shodan_scans(rv_num, scope):
     os.system('mkdir -p '+shodan_folders)
     os.system('for i in $(cat '+scope+'); do shodan host $i && sleep 1; done >> '+shodan_folders+rv_num+'_Shodan_Results.txt')
 
+def nuclei_scans(rv_num, target_list):
+    uncover_engine = input("Use Shodan API to uncover addtional assets? (Y or N): ")
+    nuclei_folders = rv_num+"_Scans/"+rv_num+"_Nuclei/"
+    os.system('mkdir -p '+nuclei_folders)
+    if uncover_engine == 'Y':
+        api_key = input("Enter Shodan API key: ")
+        os.system('export SHODAN_API_KEY='+api_key)
+        os.system('nuclei -l '+target_list+' -ni -uc -ue shodan -o '+nuclei_folders+rv_num+'_Nuclei_Scans.txt')
+    else:
+        os.system('nuclei -l '+target_list+' -ni -o '+nuclei_folders+rv_num+'_Nuclei_Scans.txt')
+
 #Currently there isn't a pressing need for this section but leaving here just in case
 #def share_backup():
 #    rv_num = input("Enter customer number: ")
