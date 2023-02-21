@@ -14,33 +14,33 @@ Assessment-Toolkit can be installed by cloning this repository and running `pip3
 
 ## Usage
 
-`discovery` - Run nmap discovery scans against provided target list.
-
-`Assessment-Toolkit -o discovery -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
-`full` - Run nmap full port scans against provided target list.
-
-`Assessment-Toolkit -o full -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
-`aquatone` - Run aquatone scans against provided web application list.
-
-`Assessment-Toolkit -o aquatone -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
-`nikto` - Run nikto scans against provided web application list.
-
-`Assessment-Toolkit -o nikto -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
-`shodan_scans` - Use Shodan API to check for open ports within provided target list. 
-
-`Assessment-Toolkit -o shodan_scans -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
-`nuclei_scans` - Run Nuclei vulnerability scanner against provided target list. Can be used with or without `uncover engine`. Shodan API key required for `uncover engine` option.
-
-`Assessment-Toolkit -o nuclei_scans -i <Target_File> -e <Exclude_File> -p <Project_Name>`
-
 `scoper` - Create an Inscope file which will account for any excluded targets if applicable.  It is highly advised to run scoper first before running any of the subsequent functions.
 
 `Assessment-Toolkit -o scoper -i <Target_File> -e <Exclude_File> -p <Project_Name>`
+
+`discovery` - Run nmap discovery scans against provided target list.
+
+`Assessment-Toolkit -o discovery -i <Target_File> -p <Project_Name>`
+
+`full` - Run nmap full port scans against provided target list.
+
+`Assessment-Toolkit -o full -i <Target_File> -p <Project_Name>`
+
+`aquatone` - Run aquatone scans against provided web application list.
+
+`Assessment-Toolkit -o aquatone -i <Target_File> -p <Project_Name>`
+
+`nikto` - Run nikto scans against provided web application list.
+
+`Assessment-Toolkit -o nikto -i <Target_File> -p <Project_Name>`
+
+`shodan_scans` - Use Shodan API to check for open ports within provided target list. 
+
+`Assessment-Toolkit -o shodan_scans -i <Target_File> -p <Project_Name>`
+
+`nuclei_scans` - Run Nuclei vulnerability scanner against provided target list. Can be used with or without `uncover engine`. Shodan API key required for `uncover engine` option.
+
+`Assessment-Toolkit -o nuclei_scans -i <Target_File> -p <Project_Name>`
 
 `external_scans` - Will run nmap discovery, aquatone discovery, nmap full port, aquatone full port, and nikto scans on provided target list.
 
