@@ -39,12 +39,14 @@ def main(
     debug: bool = typer.Option(False, '--debug', help='Enable [green]DEBUG[/] output')):
 
     init_logger(debug)
-
     input_file=str(input_file)
-    exclude_file=str(exclude_file)
+    if exclude_file:
+        exclude_file=str(exclude_file)
+    else:
+        exclude_file=None
 
     if operation == Operations.scoper:
-        scoper(project_name, input_file, exclude_file=None)
+        scoper(project_name, input_file, exclude_file)
     
     if operation == Operations.discovery:
         discovery(project_name, input_file)
