@@ -1,7 +1,8 @@
-#Created by Miguel Rios
+# Created by Miguel Rios
 import typer
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 from assessment_toolkit.logger import init_logger, logger, console
 from assessment_toolkit import __version__
 from assessment_toolkit.lib.cool_scans import *
@@ -29,14 +30,19 @@ class Operations(str, Enum):
 def main(
     operation: Operations = typer.Option(..., '--operation', '-o', 
         help='Operation to be run'),
-    project_name: str = typer.Option(..., '--project-name', '-p', help='Set project name'),
+    project_name: str = typer.Option(..., '--project-name', '-p', 
+        help='Set project name'),
     input_file: Path = typer.Option(
-        ..., '--input-file', '-i', exists=True, file_okay=True, dir_okay=False, 
-        readable=True, help='Set input file'),
-    exclude_file: Path = typer.Option(
-        None, '--exclude-file', '-e', exists=True, file_okay=True, dir_okay=False, 
-        readable=True, help='Set exclude file. NOTE: Only for scoper function'),
-    debug: bool = typer.Option(False, '--debug', help='Enable [green]DEBUG[/] output')):
+        ..., '--input-file', '-i', 
+        exists=True, file_okay=True, dir_okay=False, readable=True, 
+        help='Set input file'),
+    exclude_file: Optional[Path] = typer.Option(
+        None, '--exclude-file', '-e', 
+        exists=True, file_okay=True, dir_okay=False, readable=True, 
+        help='Set exclude file. NOTE: Only for scoper function'),
+    debug: bool = typer.Option(False, '--debug', 
+        help='Enable [green]DEBUG[/] output')
+) -> None:
 
     init_logger(debug)
     input_file=str(input_file)

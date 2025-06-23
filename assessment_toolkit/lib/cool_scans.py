@@ -107,113 +107,138 @@ def nikto(rv_num: str, target_list: str) -> bool:
         print("Mikto.sh not found")
         return False
 
-def aquatone(rv_num, target_list):
-    aquatone_folders = rv_num+'_Scans/'+rv_num+'_Aquatone/'
-    filename = 'aquatone'
-    for root,dirs,files in os.walk(r'/'):
-        for name in files:
-            if name == filename:
-                aquatone_location = os.path.abspath(os.path.join(root,name))
-    os.system('mkdir -p '+aquatone_folders)
+def aquatone(rv_num: str, target_list: str) -> bool:
+    """Run Aquatone scans"""
+    aquatone_folders = f'{rv_num}_Scans/{rv_num}_Aquatone/'
+    Path(aquatone_folders).mkdir(parents=True, exist_ok=True)
+    
     home = os.getcwd()
-    os.chdir(aquatone_folders)
-    web_targets = home+'/'+target_list
-    os.system('cat '+web_targets+'|'+str(aquatone_location))
-
-def external_scans(rv_num, target_list):
-    nmap_folders1 = rv_num+"_Scans/"+rv_num+"_Nmap/"+rv_num+"_DISC/"
-    nmap_folders2 = rv_num+"_Scans/"+rv_num+"_Nmap/"+rv_num+"_FULL/"
-    aquatone_folders1 = rv_num+"_Scans/"+rv_num+"_Aquatone/"+rv_num+"_DISC"
-    aquatone_folders2 = rv_num+"_Scans/"+rv_num+"_Aquatone/"+rv_num+"_FULL"
-    nikto_folders = rv_num+"_Scans/"+rv_num+"_Nikto/"
-    home = os.getcwd()
-    os.system('mkdir -p '+nmap_folders1)
-    os.system('mkdir -p '+nmap_folders2)
-    os.system('mkdir -p '+nikto_folders)
-    os.system('mkdir -p '+aquatone_folders1)
-    os.system('mkdir -p '+aquatone_folders2)
-    nmap_initial = 'nmap -Pn -n -sS -p 21,22,23,25,53,111,137,139,445,80,443,8443,8080,8000,1812,1433,135,4443,110,2222,993,2077,2078,3306,3389 --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA '+nmap_folders1+rv_num+'_DISC'+' '+'-iL '+target_list
-    os.system(nmap_initial)
-    os.chdir(nmap_folders1)
-    filename = 'Gnmap-Parser.sh'
-    for root,dirs,files in os.walk(r'/'):
-        for name in files:
-            if name == filename:
-                parser_location = os.path.abspath(os.path.join(root,name))
-    os.system(parser_location+' -p')
-    filename = 'aquatone'
-    for root,dirs,files in os.walk(r'/'):
-        for name in files:
-            if name == filename:
-                aquatone_location = os.path.abspath(os.path.join(root,name))
-    os.chdir(home+'/'+aquatone_folders1)
-    web_targets = home+'/'+nmap_folders1+'Parsed-Results/Third-Party/PeepingTom.txt'
-    os.system('cat '+web_targets+'|'+str(aquatone_location))
-    full_target = home+'/'+nmap_folders1+'Parsed-Results/Host-Lists/Alive-Hosts-Open-Ports.txt'
-    nmap_full = 'nmap -Pn -n -sV -p- --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA '+home+'/'+nmap_folders2+rv_num+'_FULL'+' '+'-iL '+full_target
-    os.system(nmap_full)
-    os.chdir(home+'/'+nmap_folders2)
-    filename = 'Gnmap-Parser.sh'
-    for root,dirs,files in os.walk(r'/'):
-        for name in files:
-            if name == filename:
-                parser_location = os.path.abspath(os.path.join(root,name))
-    os.system(parser_location+' -p')
-    os.chdir(home+'/'+aquatone_folders2)
-    web_targets = home+'/'+nmap_folders2+'Parsed-Results/Third-Party/PeepingTom.txt'
-    os.system('cat '+web_targets+'|'+str(aquatone_location))
-    os.chdir(home+'/'+nikto_folders)
-    filename = 'Mikto.sh'
-    for root,dirs,files in os.walk(r'/'):
-        for name in files:
-            if name == filename:
-                mikto_location = os.path.abspath(os.path.join(root,name))
-    os.system(mikto_location+' -f '+web_targets+' -w 10')
-
-def run_command(command):
-    try:
-        result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(f"Command succeeded: {command}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed: {command}\nError: {e.stderr.decode('utf-8')}")
+    web_targets = os.path.join(home, target_list)
+    
+    aquatone_location = find_file_in_path('aquatone')
+    if aquatone_location:
+        command = f'cat {shlex.quote(web_targets)} | {shlex.quote(aquatone_location)}'
+        return run_command_safe(command, cwd=aquatone_folders)
+    else:
+        print("aquatone not found")
         return False
 
-def internal_scans(rv_num, target_list):
+def external_scans(rv_num: str, target_list: str) -> bool:
+    """Run external scans (discovery, full port, aquatone, nikto)"""
+    # Create all necessary directories
+    nmap_folders1 = f"{rv_num}_Scans/{rv_num}_Nmap/{rv_num}_DISC/"
+    nmap_folders2 = f"{rv_num}_Scans/{rv_num}_Nmap/{rv_num}_FULL/"
+    aquatone_folders1 = f"{rv_num}_Scans/{rv_num}_Aquatone/{rv_num}_DISC"
+    aquatone_folders2 = f"{rv_num}_Scans/{rv_num}_Aquatone/{rv_num}_FULL"
+    nikto_folders = f"{rv_num}_Scans/{rv_num}_Nikto/"
+    
+    home = os.getcwd()
+    
+    # Create directories safely
+    for folder in [nmap_folders1, nmap_folders2, nikto_folders, aquatone_folders1, aquatone_folders2]:
+        Path(folder).mkdir(parents=True, exist_ok=True)
+    
+    # Initial nmap discovery scan
+    nmap_initial = f'nmap -Pn -n -sS -p 21,22,23,25,53,111,137,139,445,80,443,8443,8080,8000,1812,1433,135,4443,110,2222,993,2077,2078,3306,3389 --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {shlex.quote(nmap_folders1 + rv_num + "_DISC")} -iL {shlex.quote(target_list)}'
+    
+    if not run_command_safe(nmap_initial):
+        return False
+    
+    # Run parser on discovery results
+    parser_location = find_file_in_path('Gnmap-Parser.sh')
+    if parser_location:
+        if not run_command_safe(f'{shlex.quote(parser_location)} -p', cwd=nmap_folders1):
+            return False
+    else:
+        print("Gnmap-Parser.sh not found")
+        return False
+    
+    # Run aquatone on discovery results
+    aquatone_location = find_file_in_path('aquatone')
+    if aquatone_location:
+        web_targets = os.path.join(home, nmap_folders1, 'Parsed-Results/Third-Party/PeepingTom.txt')
+        if not run_command_safe(f'cat {shlex.quote(web_targets)} | {shlex.quote(aquatone_location)}', cwd=aquatone_folders1):
+            return False
+    else:
+        print("aquatone not found")
+        return False
+    
+    # Full port scan
+    full_target = os.path.join(home, nmap_folders1, 'Parsed-Results/Host-Lists/Alive-Hosts-Open-Ports.txt')
+    nmap_full = f'nmap -Pn -n -sV -p- --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {shlex.quote(nmap_folders2 + rv_num + "_FULL")} -iL {shlex.quote(full_target)}'
+    
+    if not run_command_safe(nmap_full):
+        return False
+    
+    # Parse full scan results
+    if not run_command_safe(f'{shlex.quote(parser_location)} -p', cwd=nmap_folders2):
+        return False
+    
+    # Run aquatone on full scan results
+    web_targets = os.path.join(home, nmap_folders2, 'Parsed-Results/Third-Party/PeepingTom.txt')
+    if not run_command_safe(f'cat {shlex.quote(web_targets)} | {shlex.quote(aquatone_location)}', cwd=aquatone_folders2):
+        return False
+    
+    # Run Nikto scans
+    mikto_location = find_file_in_path('Mikto.sh')
+    if mikto_location:
+        command = f'{shlex.quote(mikto_location)} -f {shlex.quote(web_targets)} -w 10'
+        return run_command_safe(command, cwd=nikto_folders)
+    else:
+        print("Mikto.sh not found")
+        return False
+
+def internal_scans(rv_num: str, target_list: str) -> bool:
+    """Run internal scans (discovery, full port, aquatone)"""
     nmap_folders1 = f"{rv_num}_Scans/{rv_num}_Nmap/{rv_num}_DISC/"
     nmap_folders2 = f"{rv_num}_Scans/{rv_num}_Nmap/{rv_num}_FULL/"
     aquatone_folders1 = f"{rv_num}_Scans/{rv_num}_Aquatone/{rv_num}_DISC"
     aquatone_folders2 = f"{rv_num}_Scans/{rv_num}_Aquatone/{rv_num}_FULL"
     home = os.getcwd()
 
+    # Create directories safely
     for folder in [nmap_folders1, nmap_folders2, aquatone_folders1, aquatone_folders2]:
-        os.makedirs(folder, exist_ok=True)
+        Path(folder).mkdir(parents=True, exist_ok=True)
 
-    nmap_initial = f'nmap -Pn -n -sS -p 21,22,23,25,53,111,137,139,445,80,443,8443,8080,8000,1812,1433,135,4443,110,2222,993,2077,2078,3306,3389 --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {nmap_folders1}{rv_num}_DISC -iL {target_list}'
-    run_command(nmap_initial)
+    # Initial discovery scan
+    nmap_initial = f'nmap -Pn -n -sS -p 21,22,23,25,53,111,137,139,445,80,443,8443,8080,8000,1812,1433,135,4443,110,2222,993,2077,2078,3306,3389 --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {shlex.quote(nmap_folders1 + rv_num + "_DISC")} -iL {shlex.quote(target_list)}'
+    
+    if not run_command_safe(nmap_initial):
+        return False
 
+    # Run parser on discovery
     parser_location = find_file_in_path('Gnmap-Parser.sh')
     if parser_location:
-        os.chdir(nmap_folders1)
-        run_command(f'{parser_location} -p')
+        if not run_command_safe(f'{shlex.quote(parser_location)} -p', cwd=nmap_folders1):
+            return False
+    else:
+        print("Gnmap-Parser.sh not found")
+        return False
 
+    # Run aquatone on discovery results
     aquatone_location = find_file_in_path('aquatone')
     if aquatone_location:
-        os.chdir(os.path.join(home, aquatone_folders1))
         web_targets = os.path.join(home, nmap_folders1, 'Parsed-Results/Third-Party/PeepingTom.txt')
-        run_command(f'cat {web_targets}|{aquatone_location}')
+        if not run_command_safe(f'cat {shlex.quote(web_targets)} | {shlex.quote(aquatone_location)}', cwd=aquatone_folders1):
+            return False
 
-        os.chdir(os.path.join(home, nmap_folders2))
+        # Full port scan
         full_target = os.path.join(home, nmap_folders1, 'Parsed-Results/Host-Lists/Alive-Hosts-Open-Ports.txt')
-        nmap_full = f'nmap -Pn -n -sV -p- --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {os.path.join(home, nmap_folders2)}{rv_num}_FULL -iL {full_target}'
-        run_command(nmap_full)
+        nmap_full = f'nmap -Pn -n -sV -p- --min-hostgroup 255 --min-rtt-timeout 0ms --max-rtt-timeout 100ms --max-retries 1 --max-scan-delay 0 --min-rate 2000 -vvv --open -oA {shlex.quote(nmap_folders2 + rv_num + "_FULL")} -iL {shlex.quote(full_target)}'
+        
+        if not run_command_safe(nmap_full):
+            return False
 
-        if parser_location:
-            run_command(f'{parser_location} -p')
+        # Parse full scan results
+        if not run_command_safe(f'{shlex.quote(parser_location)} -p', cwd=nmap_folders2):
+            return False
 
-        os.chdir(os.path.join(home, aquatone_folders2))
+        # Run aquatone on full scan results
         web_targets = os.path.join(home, nmap_folders2, 'Parsed-Results/Third-Party/PeepingTom.txt')
-        run_command(f'cat {web_targets}|{aquatone_location}')
+        return run_command_safe(f'cat {shlex.quote(web_targets)} | {shlex.quote(aquatone_location)}', cwd=aquatone_folders2)
+    else:
+        print("aquatone not found")
+        return False
 
 def shodan_scans(rv_num: str, scope: str) -> bool:
     """Run Shodan scans"""
