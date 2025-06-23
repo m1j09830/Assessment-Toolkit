@@ -1,5 +1,11 @@
 # Assessment-Toolkit
 
+## Python Compatibility
+
+✅ **Python 3.13 Compatible!** This project supports Python 3.9 through 3.13.
+
+See [PYTHON_313_COMPATIBILITY.md](./PYTHON_313_COMPATIBILITY.md) for details on recent updates.
+
 ## Dependencies
 
 The following tools must be installed on the system:
