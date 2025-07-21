@@ -21,24 +21,44 @@ def find_file_in_path(filename: str) -> Optional[str]:
 
 
 def run_command_safe(command: str, cwd: Optional[str] = None) -> bool:
-    """Safely execute shell commands using subprocess instead of os.system"""
+    """Safely execute shell commands using subprocess and show real-time output"""
     try:
-        result = subprocess.run(
-            command, 
-            shell=True, 
-            check=True, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE,
+        print(f"🔄 Running command: {command}")
+        if cwd:
+            print(f"📁 Working directory: {cwd}")
+        print("-" * 50)
+        
+        # Run command with real-time output streaming
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  # Merge stderr with stdout
             cwd=cwd,
-            text=True
+            text=True,
+            bufsize=1,
+            universal_newlines=True
         )
-        print(f"Command succeeded: {command}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed: {command}\nError: {e.stderr}")
-        return False
+        
+        # Print output in real-time as it comes
+        for line in iter(process.stdout.readline, ''):
+            if line:
+                print(line.rstrip())
+        
+        # Wait for process to complete
+        process.stdout.close()
+        return_code = process.wait()
+        
+        print("-" * 50)
+        if return_code == 0:
+            print(f"✅ Command completed successfully")
+            return True
+        else:
+            print(f"❌ Command failed with exit code {return_code}")
+            return False
+            
     except Exception as e:
-        print(f"Unexpected error running command: {command}\nError: {e}")
+        print(f"❌ Unexpected error running command: {command}\nError: {e}")
         return False
 
 def scoper(rv_num: str, scope: str, exclude_file: Optional[str] = None) -> bool: 
